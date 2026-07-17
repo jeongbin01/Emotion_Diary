@@ -157,10 +157,12 @@ Gemini API 키가 없어도 감정 분석 기능은 정상 동작하며,
 npm run dev
 ```
 
-개발 서버 실행 후 아래 주소로 접속합니다.
+아래와 같이 로컬 서버 주소가 출력되면, 브라우저에서 [http://localhost:3000](http://localhost:3000)으로 접속합니다.
 
 ```text
-http://localhost:3000
+▲ Next.js 16.2.9 (Turbopack)
+- Local: http://localhost:3000
+✓ Ready in 1091ms
 ```
 
 > 서버가 시작되면 `instrumentation.ts`가 Python 추론 프로세스(`BE/infer_server.py`)를 미리 백그라운드에서 예열합니다. 첫 요청 전에 모델 로딩(수십 초~수 분)이 끝나지 않았다면 첫 일기 분석 요청이 다소 오래 걸릴 수 있습니다. 이후 요청부터는 상주 프로세스가 재사용되어 수 초 내로 응답하며, 프로세스가 죽더라도 다음 요청 시 자동으로 다시 기동됩니다.
