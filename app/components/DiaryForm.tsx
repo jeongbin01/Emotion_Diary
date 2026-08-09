@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Loader2, Stamp } from 'lucide-react'
 import EmotionRingCard from './EmotionRingCard'
 import EmotionSummaryCard from './EmotionSummaryCard'
@@ -13,6 +14,7 @@ import ActivitiesCard from './ActivitiesCard'
 import QuoteCard from './QuoteCard'
 import EmotionDetailSummary from './EmotionDetailSummary'
 import EmotionChart from './EmotionChart'
+import { buildPastDays, type DiarySummary, type PastDay } from '../lib/weeklyTrend'
 
 type EmotionScore = { label: string; score: number }
 type Cause = { label: string; percent: number }
@@ -37,6 +39,28 @@ export default function DiaryForm() {
   const [result, setResult] = useState<Result | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [pastDays, setPastDays] = useState<PastDay[] | undefined>(undefined)
+
+  // 결과가 생기면(=방금 일기가 DB에 저장됨) 최근 일기 목록을 다시 불러와 최근 6일 감정을 채운다.
+  // 실제 기록이 없는 날은 buildPastDays가 null로 남겨두고, WeeklyTrendChart가 이를 "기록 없음"으로
+  // 그린다 — 히스토리 저장 기능이 생기기 전 쓰던 고정 샘플 값(월~토 하드코딩)을 대체한다.
+  useEffect(() => {
+    if (!result) return
+    let cancelled = false
+    fetch('/api/diaries?limit=30')
+      .then((res) => res.json())
+      .then((data: DiarySummary[] | { error: string }) => {
+        if (cancelled || !Array.isArray(data)) return
+        setPastDays(buildPastDays(data))
+      })
+      .catch(() => {
+        // 실패해도 무시한다 — WeeklyTrendChart는 pastDays가 없으면 6일 전부를 "기록 없음"으로
+        // 보여줄 뿐이라, 여기서 에러 배너까지 띄울 정도로 중요한 실패는 아니다.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [result])
 
   const today = new Date().toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -75,6 +99,7 @@ export default function DiaryForm() {
     setResult(null)
     setText('')
     setError('')
+    setPastDays(undefined)
   }
 
   return (
@@ -91,6 +116,12 @@ export default function DiaryForm() {
             <p className="font-pretendard text-[13px] font-medium text-[#8B74D9]">{today}</p>
             <span className="h-px w-8 sm:w-10 bg-[#8B74D9]/40" />
           </div>
+          <Link
+            href="/design-system"
+            className="ds-btn mt-4 inline-block font-pretendard text-[12px] font-medium text-[#6D6D6D] hover:text-[#8B74D9] underline underline-offset-4 decoration-[#E8E3DA]"
+          >
+            디자인 시스템 보기
+          </Link>
         </header>
 
         {/* 입력 카드 */}
@@ -171,7 +202,7 @@ export default function DiaryForm() {
             <div className="fade-up grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ animationDelay: '0.08s' }}>
               {result.emotions?.length > 0 && <EmotionTop3Card emotions={result.emotions} />}
               {result.causes?.length > 0 && <CauseDonutChart label={result.label} causes={result.causes} />}
-              <WeeklyTrendChart label={result.label} />
+              <WeeklyTrendChart label={result.label} pastDays={pastDays} />
             </div>
 
             {/* Row 3: 오늘의 기록 / AI 추천 활동 / AI 한마디 / 오늘의 문장 (2x2 그리드로 행 높이를 맞춘다) */}
