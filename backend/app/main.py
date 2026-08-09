@@ -4,12 +4,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import cost, diaries
+from app.db.session import engine
+from app.models import Base
 from app.services.ai.fasttext_classifier import get_fasttext_classifier
 from app.services.ai.kcbert import get_kcbert_classifier
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)
+
     # KcBERT(~415MB)/FastText(~2.4MB) 모델을 부팅 시 한 번만 메모리에 올린다. Next.js 버전의
     # instrumentation.ts가 자식 프로세스를 예열하던 것과 같은 목적이지만, 여기서는 프로세스
     # 경계가 없어 함수 호출 하나로 끝난다(§7 "이 아키텍처의 핵심").

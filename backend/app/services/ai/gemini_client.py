@@ -32,10 +32,13 @@ def _build_prompt(text: str, base_label: str) -> str:
 참고로 간단한 감정 분류 모델은 이 일기를 "{base_label}" 계열로 예측했습니다.
 
 주어진 감정 목록 중에서만 골라 label, emotions를 작성하고,
+각 필드는 반드시 이 일기에 실제로 등장한 상황, 행동 또는 표현과 감정 분석 결과를 함께 반영하세요.
+누구에게나 적용되는 뻔한 문구나 이전 답변을 반복하지 마세요.
 aiOneLiner에는 오늘 감정을 관통하는 통찰을 정말 한 문장(15~35자, 마침표 하나, 줄바꿈 없이)으로 작성하고,
-aiMessage에는 일기에 공감하며 2~3문장으로 따뜻하게 답변해주세요.
+aiMessage에는 일기의 구체적인 맥락을 짚어 공감하며 2~3문장으로 따뜻하게 답변해주세요.
 추가로 causes(감정 원인과 비중), keywords(상황 키워드), mindState(심리 상태 통찰), growthPoint(성장 포인트),
-tomorrowMessage(내일의 나에게), activities(추천 활동 4개), quote(오늘의 응원 문장)도 함께 작성해주세요."""
+tomorrowMessage(내일의 나에게), activities(현재 감정과 오늘의 상황에 맞춰 바로 할 수 있는 추천 활동 4개),
+quote(오늘의 감정에 어울리는 새로운 응원 문장)도 함께 작성해주세요."""
 
 
 def classify_with_gemini(text: str, base_label: str, api_key: str) -> GeminiCallResult:

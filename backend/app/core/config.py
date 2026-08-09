@@ -8,7 +8,12 @@ BACKEND_ROOT = REPO_ROOT / "backend"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=str(BACKEND_ROOT / ".env"), extra="ignore")
+    # Local development keeps the shared Gemini key in the repository root's
+    # .env.local.  A backend/.env file can still override it for deployments.
+    model_config = SettingsConfigDict(
+        env_file=(str(REPO_ROOT / ".env.local"), str(BACKEND_ROOT / ".env")),
+        extra="ignore",
+    )
 
     database_url: str = f"sqlite+aiosqlite:///{(BACKEND_ROOT / 'emotion_diary.db').as_posix()}"
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { Loader2, Stamp } from 'lucide-react'
 import EmotionRingCard from './EmotionRingCard'
 import EmotionSummaryCard from './EmotionSummaryCard'
@@ -116,12 +115,6 @@ export default function DiaryForm() {
             <p className="font-pretendard text-[13px] font-medium text-[#8B74D9]">{today}</p>
             <span className="h-px w-8 sm:w-10 bg-[#8B74D9]/40" />
           </div>
-          <Link
-            href="/design-system"
-            className="ds-btn mt-4 inline-block font-pretendard text-[12px] font-medium text-[#6D6D6D] hover:text-[#8B74D9] underline underline-offset-4 decoration-[#E8E3DA]"
-          >
-            디자인 시스템 보기
-          </Link>
         </header>
 
         {/* 입력 카드 */}
