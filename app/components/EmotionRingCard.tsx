@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Clock, TrendingUp } from 'lucide-react'
+import { confidenceToStars } from '../lib/confidence'
 import { getEmotionTheme } from '../lib/emotion-theme'
 
 type Props = {
@@ -16,7 +17,7 @@ export default function EmotionRingCard({ label, confidence }: Props) {
   const [progress, setProgress] = useState(0)
   const theme = getEmotionTheme(label)
   const pct = confidence * 100
-  const level = Math.min(5, Math.max(1, Math.round(confidence * 5)))
+  const level = confidenceToStars(confidence)
   const time = new Date().toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })
 
   useEffect(() => {

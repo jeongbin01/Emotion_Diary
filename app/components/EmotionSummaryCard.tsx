@@ -1,4 +1,5 @@
 import { Star } from 'lucide-react'
+import { confidenceToStars } from '../lib/confidence'
 import { getEmotionTheme } from '../lib/emotion-theme'
 
 type Props = {
@@ -11,7 +12,7 @@ type Props = {
 export default function EmotionSummaryCard({ label, confidence, aiOneLiner, keywords = [] }: Props) {
   const theme = getEmotionTheme(label)
   const pct = confidence * 100
-  const filledStars = Math.min(5, Math.max(1, Math.round(confidence * 5)))
+  const filledStars = confidenceToStars(confidence)
 
   return (
     <div className="ds-card ds-card-hover p-6 lg:p-8">
