@@ -82,7 +82,7 @@ export default function EmotionRingCard({ label, confidence }: Props) {
         <span>어제보다 +12%</span>
       </div>
       <p className="mt-3 flex items-center gap-1 font-pretendard text-xs text-[#6D6D6D]">
-        <Clock size={13} strokeWidth={2} />
+        <Clock size={13} strokeWidth={2} aria-hidden="true" />
         {time}
       </p>
     </div>
