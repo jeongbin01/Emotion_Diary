@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
@@ -61,6 +62,14 @@ async def log_requests(request: Request, call_next):
         "%s %s -> %d (%dms)", request.method, request.url.path, response.status_code, duration_ms
     )
     return response
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    # HTTPException(400/404 등)은 FastAPI 기본 핸들러가 그대로 처리하므로 여기까지 오지 않는다.
+    # 여기 도달하는 예외는 전부 예상치 못한 실패라, 스택트레이스를 남기고 내부 정보는 노출하지 않는다.
+    logger.exception("처리되지 않은 예외: %s %s", request.method, request.url.path)
+    return JSONResponse(status_code=500, content={"detail": "서버 오류가 발생했습니다."})
 
 
 app.include_router(diaries.router, prefix="/api/v1")
