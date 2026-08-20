@@ -35,6 +35,17 @@ describe('POST /api/analyze', () => {
     expect(await res.json()).toEqual({ error: '분석 실패' })
   })
 
+  it('forwards the backend error field when there is no detail (e.g. rate limit responses)', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ error: 'Rate limit exceeded: 10 per 1 minute' }), { status: 429 }),
+    )
+
+    const res = await POST(req({ text: '오늘 하루 기록' }))
+
+    expect(res.status).toBe(429)
+    expect(await res.json()).toEqual({ error: 'Rate limit exceeded: 10 per 1 minute' })
+  })
+
   it('falls back to a generic message when the backend error body has no detail', async () => {
     vi.mocked(fetch).mockResolvedValue(new Response('not json', { status: 500 }))
 
