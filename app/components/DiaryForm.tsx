@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Loader2, Stamp } from 'lucide-react'
 import EmotionRingCard from './EmotionRingCard'
 import EmotionSummaryCard from './EmotionSummaryCard'
@@ -13,53 +12,10 @@ import ActivitiesCard from './ActivitiesCard'
 import QuoteCard from './QuoteCard'
 import EmotionDetailSummary from './EmotionDetailSummary'
 import EmotionChart from './EmotionChart'
-import { buildPastDays, type DiarySummary, type PastDay } from '../lib/weeklyTrend'
-
-type EmotionScore = { label: string; score: number }
-type Cause = { label: string; percent: number }
-type Activity = { icon: string; label: string }
-type Result = {
-  label: string
-  confidence: number
-  aiOneLiner: string
-  aiMessage: string
-  emotions: EmotionScore[]
-  causes: Cause[]
-  keywords: string[]
-  mindState: string
-  growthPoint: string
-  tomorrowMessage: string
-  activities: Activity[]
-  quote: string
-}
+import { useDiaryAnalysis } from '../hooks/useDiaryAnalysis'
 
 export default function DiaryForm() {
-  const [text, setText] = useState('')
-  const [result, setResult] = useState<Result | null>(null)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [pastDays, setPastDays] = useState<PastDay[] | undefined>(undefined)
-
-  // 결과가 생기면(=방금 일기가 DB에 저장됨) 최근 일기 목록을 다시 불러와 최근 6일 감정을 채운다.
-  // 실제 기록이 없는 날은 buildPastDays가 null로 남겨두고, WeeklyTrendChart가 이를 "기록 없음"으로
-  // 그린다 — 히스토리 저장 기능이 생기기 전 쓰던 고정 샘플 값(월~토 하드코딩)을 대체한다.
-  useEffect(() => {
-    if (!result) return
-    let cancelled = false
-    fetch('/api/diaries?limit=30')
-      .then((res) => res.json())
-      .then((data: DiarySummary[] | { error: string }) => {
-        if (cancelled || !Array.isArray(data)) return
-        setPastDays(buildPastDays(data))
-      })
-      .catch(() => {
-        // 실패해도 무시한다 — WeeklyTrendChart는 pastDays가 없으면 6일 전부를 "기록 없음"으로
-        // 보여줄 뿐이라, 여기서 에러 배너까지 띄울 정도로 중요한 실패는 아니다.
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [result])
+  const { text, setText, tooShort, result, error, loading, pastDays, analyze, reset } = useDiaryAnalysis()
 
   const today = new Date().toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -67,39 +23,6 @@ export default function DiaryForm() {
     day: 'numeric',
     weekday: 'long',
   })
-
-  const tooShort = text.trim().length < 10
-
-  async function analyze() {
-    if (tooShort || loading) return
-    setLoading(true)
-    setResult(null)
-    setError('')
-    try {
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      })
-      const data = await res.json()
-      if (!res.ok || data.error) {
-        setError(data.error || '감정 분석 중 오류가 발생했습니다.')
-        return
-      }
-      setResult(data as Result)
-    } catch {
-      setError('감정 분석 요청에 실패했습니다.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  function reset() {
-    setResult(null)
-    setText('')
-    setError('')
-    setPastDays(undefined)
-  }
 
   return (
     <div className="dashboard-bg min-h-screen px-5 sm:px-8 lg:px-10 py-12 lg:py-16">
@@ -132,10 +55,7 @@ export default function DiaryForm() {
               />
               <textarea
                 value={text}
-                onChange={(e) => {
-                  setText(e.target.value)
-                  setError('')
-                }}
+                onChange={(e) => setText(e.target.value)}
                 placeholder="오늘 있었던 일을 자유롭게 적어보세요..."
                 className="notepad-lines w-full resize-none bg-transparent pr-5 pt-1 pb-3 font-gaegu text-[20px] text-[#2B2B2B] placeholder-[#B7B1A4] focus:outline-none"
                 style={{ minHeight: '190px', paddingLeft: '52px' }}
