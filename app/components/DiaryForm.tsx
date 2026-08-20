@@ -3,6 +3,7 @@
 import DiaryInputForm from './DiaryInputForm'
 import DiaryResultDashboard from './DiaryResultDashboard'
 import ErrorBanner from './ErrorBanner'
+import ErrorBoundary from './ErrorBoundary'
 import { useDiaryAnalysis } from '../hooks/useDiaryAnalysis'
 
 export default function DiaryForm() {
@@ -37,7 +38,11 @@ export default function DiaryForm() {
 
         {error && <ErrorBanner message={error} />}
 
-        {result && <DiaryResultDashboard result={result} text={text} pastDays={pastDays} onReset={reset} />}
+        {result && (
+          <ErrorBoundary onReset={reset}>
+            <DiaryResultDashboard result={result} text={text} pastDays={pastDays} onReset={reset} />
+          </ErrorBoundary>
+        )}
 
       </div>
     </div>
