@@ -1,3 +1,4 @@
+import logging
 import random
 import time
 from dataclasses import dataclass, field
@@ -8,6 +9,8 @@ from app.services import cost_tracking
 from app.services.ai.fasttext_classifier import FastTextClassifier, get_fasttext_classifier
 from app.services.ai.gemini_client import GeminiClientError, GeminiCallResult, classify_with_gemini
 from app.services.ai.kcbert import KcBertClassifier, get_kcbert_classifier
+
+logger = logging.getLogger(__name__)
 
 FALLBACK_ACTIVITIES: dict[str, list[dict]] = {
     "긍정": [
@@ -128,9 +131,8 @@ def _gemini_result_to_dict(parsed, detailed_emotions: list[dict]) -> dict:
 
 
 class EmotionAnalysisService:
-    """route.ts의 POST 핸들러 + classifyWithGemini를 합친 오케스트레이션 계층. Router나 DB
-    세션에 의존하지 않아 Gemini/랜덤 함수를 주입하면 HTTP나 실제 API 호출 없이 라우팅 로직만
-    결정론적으로 단위 테스트할 수 있다(docs/PORTFOLIO_REDESIGN.md §26)."""
+    """엔진 선택(KcBERT/FastText/Gemini) 오케스트레이션 계층. Router나 DB 세션에 의존하지 않아
+    Gemini/랜덤 함수를 주입하면 HTTP나 실제 API 호출 없이 라우팅 로직만 결정론적으로 테스트할 수 있다."""
 
     def __init__(
         self,
@@ -169,6 +171,7 @@ class EmotionAnalysisService:
         return min(1.0, max(0.0, ratio))
 
     def _local_outcome(self, base: dict, detailed_emotions: list[dict]) -> AnalysisOutcome:
+        logger.info("FastText 로컬 경로 사용 (engine=fasttext)")
         cost_tracking.record_fasttext_request()
         result = create_local_detailed_result(
             base["label"], base["confidence"], base["emotions"], detailed_emotions
@@ -178,13 +181,16 @@ class EmotionAnalysisService:
     def _gemini_outcome(self, text: str, base: dict, detailed_emotions: list[dict]) -> AnalysisOutcome:
         api_key = self._settings.gemini_api_key
         if not api_key:
+            logger.info("GEMINI_API_KEY 미설정, FastText 폴백")
             return self._local_outcome(base, detailed_emotions)
 
         try:
             gemini_result = self._gemini_classify(text, base["label"], api_key)
-        except GeminiClientError:
+        except GeminiClientError as exc:
+            logger.warning("Gemini 실패로 FastText 폴백: %s", exc)
             return self._local_outcome(base, detailed_emotions)
 
+        logger.info("Gemini 경로 사용 (engine=gemini)")
         cost = cost_tracking.record_gemini_request(gemini_result.input_tokens, gemini_result.output_tokens)
         result = _gemini_result_to_dict(gemini_result.parsed, detailed_emotions)
         return AnalysisOutcome(

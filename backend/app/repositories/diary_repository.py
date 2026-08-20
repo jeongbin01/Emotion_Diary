@@ -1,6 +1,8 @@
+import logging
 import uuid
 
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -8,10 +10,11 @@ from app.models.diary import Diary
 from app.models.emotion_analysis import EmotionAnalysis
 from app.services.emotion_analysis import AnalysisOutcome
 
+logger = logging.getLogger(__name__)
+
 
 class DiaryRepository:
-    """SQLAlchemy 쿼리를 캡슐화한다. Service는 "일기와 분석 결과를 저장해달라"고만 요청하고,
-    실제 INSERT/조인/정렬은 여기서 담당한다 — docs/PORTFOLIO_REDESIGN.md §9의 3계층 분리."""
+    """일기/분석 결과에 대한 SQLAlchemy 쿼리 캡슐화 계층."""
 
     def __init__(self, session: AsyncSession):
         self._session = session
@@ -29,7 +32,11 @@ class DiaryRepository:
             **outcome.result,
         )
         self._session.add(diary)
-        await self._session.commit()
+        try:
+            await self._session.commit()
+        except SQLAlchemyError:
+            logger.exception("일기 저장 실패")
+            raise
         await self._session.refresh(diary, attribute_names=["emotion_analysis"])
         return diary
 

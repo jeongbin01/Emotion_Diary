@@ -1,13 +1,20 @@
+import logging
+import time
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import cost, diaries
+from app.core.config import settings
+from app.core.logging import setup_logging
 from app.db.session import engine
 from app.models import Base
 from app.services.ai.fasttext_classifier import get_fasttext_classifier
 from app.services.ai.kcbert import get_kcbert_classifier
+
+setup_logging(settings.log_level)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -15,11 +22,12 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
 
-    # KcBERT(~415MB)/FastText(~2.4MB) 모델을 부팅 시 한 번만 메모리에 올린다. Next.js 버전의
-    # instrumentation.ts가 자식 프로세스를 예열하던 것과 같은 목적이지만, 여기서는 프로세스
-    # 경계가 없어 함수 호출 하나로 끝난다(§7 "이 아키텍처의 핵심").
+    # KcBERT(~415MB)/FastText(~2.4MB) 모델을 부팅 시 한 번만 메모리에 올린다 — 요청마다 모델을
+    # 새로 로딩하는 비용을 없앤다.
+    start = time.perf_counter()
     get_kcbert_classifier()
     get_fasttext_classifier()
+    logger.info("모델 워밍업 완료 (%.2fs)", time.perf_counter() - start)
     yield
 
 
@@ -36,6 +44,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = int((time.perf_counter() - start) * 1000)
+    logger.info(
+        "%s %s -> %d (%dms)", request.method, request.url.path, response.status_code, duration_ms
+    )
+    return response
+
 
 app.include_router(diaries.router, prefix="/api/v1")
 app.include_router(cost.router, prefix="/api/v1")
