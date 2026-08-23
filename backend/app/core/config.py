@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite+aiosqlite:///{(BACKEND_ROOT / 'emotion_diary.db').as_posix()}"
 
     log_level: str = "INFO"
+    # Gemini SDK 호출 타임아웃(초). 초과하면 GeminiClientError로 감싸져 기존 FastText 폴백 경로를 탄다.
+    gemini_timeout_seconds: float = 15.0
     # KcBERT/FastText/Gemini 전체 분석 파이프라인(diaries.py의 asyncio.to_thread) 타임아웃(초).
     analysis_timeout_seconds: float = 30.0
     # POST /api/v1/diaries에 대한 IP당 분당 허용 요청 수. 로그인 기반 인증이 아직 없어 IP 기준으로 제한한다.

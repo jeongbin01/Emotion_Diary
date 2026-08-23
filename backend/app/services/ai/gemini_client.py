@@ -1,9 +1,13 @@
+import logging
 from dataclasses import dataclass
 
 from google import genai
 from google.genai import types
 
+from app.core.config import settings
 from app.services.ai.gemini_schema import GeminiAnalysisSchema
+
+logger = logging.getLogger(__name__)
 
 GEMINI_MODEL = "gemini-2.5-flash"
 
@@ -42,9 +46,11 @@ quote(오늘의 감정에 어울리는 새로운 응원 문장)도 함께 작성
 
 
 def classify_with_gemini(text: str, base_label: str, api_key: str) -> GeminiCallResult:
-    client = genai.Client(api_key=api_key)
+    timeout_ms = int(settings.gemini_timeout_seconds * 1000)
+    client = genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=timeout_ms))
     prompt = _build_prompt(text, base_label)
 
+    logger.info("Gemini 호출 시작 (timeout=%.0fs)", settings.gemini_timeout_seconds)
     try:
         response = client.models.generate_content(
             model=GEMINI_MODEL,
@@ -57,11 +63,13 @@ def classify_with_gemini(text: str, base_label: str, api_key: str) -> GeminiCall
                 thinking_config=types.ThinkingConfig(thinking_budget=0),
             ),
         )
-    except Exception as exc:  # Gemini SDK/네트워크 실패 전부 한 지점에서 폴백으로 넘긴다.
+    except Exception as exc:  # 타임아웃 포함, SDK/네트워크 실패 전부 한 지점에서 폴백으로 넘긴다.
+        logger.warning("Gemini 호출 실패, FastText 폴백으로 전환: %s", exc)
         raise GeminiClientError(str(exc)) from exc
 
     parsed = response.parsed
     if parsed is None:
+        logger.warning("Gemini 응답 파싱 실패, FastText 폴백으로 전환")
         raise GeminiClientError("Gemini 응답을 스키마로 파싱하지 못했습니다.")
 
     usage = response.usage_metadata
@@ -70,5 +78,6 @@ def classify_with_gemini(text: str, base_label: str, api_key: str) -> GeminiCall
     output_tokens = int(getattr(usage, "candidates_token_count", 0) or 0) + int(
         getattr(usage, "thoughts_token_count", 0) or 0
     )
+    logger.info("Gemini 호출 성공 (input_tokens=%d, output_tokens=%d)", input_tokens, output_tokens)
 
     return GeminiCallResult(parsed=parsed, input_tokens=input_tokens, output_tokens=output_tokens)
