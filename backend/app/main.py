@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import cost, diaries
+from app.api.v1 import auth, cost, diaries
 from app.db.session import engine
 from app.models import Base
 from app.services.ai.fasttext_classifier import get_fasttext_classifier
@@ -39,6 +39,7 @@ app.add_middleware(
 
 app.include_router(diaries.router, prefix="/api/v1")
 app.include_router(cost.router, prefix="/api/v1")
+app.include_router(auth.router, prefix="/api/v1")
 
 
 @app.get("/health")

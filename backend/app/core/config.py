@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     kcbert_model_path: str = str(BACKEND_ROOT / "models" / "kcbert")
     fasttext_model_path: str = str(BACKEND_ROOT / "models" / "fasttext" / "emotion_ft.bin")
 
+    # JWT 서명 비밀 키. 기본값은 로컬 개발 전용이며, 프로덕션 배포 시 반드시 .env에서
+    # 무작위로 재생성한 값으로 덮어써야 한다(하드코딩 금지 원칙 — 이 기본값 자체를
+    # 실제 배포에 쓰지 않는다는 전제하에만 안전하다).
+    jwt_secret: str = "dev-only-insecure-secret-change-me"
+    jwt_access_token_expire_minutes: int = 60 * 24  # 1일
+
     @property
     def sync_database_url(self) -> str:
         # Alembic은 동기 드라이버로 마이그레이션을 돌린다. asyncpg/aiosqlite 접두어만 제거하면
