@@ -4,7 +4,49 @@
 
 프론트엔드(Next.js)와 백엔드(FastAPI)가 분리된 구조로, KcBERT(극성 분류) → Gemini(생성형 세부 감정 분석) 또는 FastText(무료 CPU 다중 라벨 분류) 3단계 파이프라인을 갖고 있습니다. Gemini 호출 비율을 환경 변수로 조절해 서비스 비용을 0에 가깝게 수렴시킬 수 있는 구조를 실제로 구현하고 실측했습니다.
 
-> 이 프로젝트를 만든 이유, 기술 선택 배경, 아키텍처, 실측 비용 데이터 등 자세한 설계 문서는 **[docs/TECHNICAL_DETAILS.md](docs/TECHNICAL_DETAILS.md)**에 정리했습니다.
+> 이 프로젝트를 만든 이유와 기술 선택 배경은 [포트폴리오 설계 문서](docs/PORTFOLIO_REDESIGN.md)에서 확인할 수 있습니다.
+
+## 빠른 실행 (Windows PowerShell)
+
+백엔드와 프론트엔드는 **서로 다른 PowerShell 창**에서 실행합니다. 백엔드 창은 서버가 실행되는 동안 닫거나 `Ctrl+C`를 누르지 마세요.
+
+### 1. 백엔드 실행
+
+```powershell
+cd C:\Emotion_Diary\backend
+python -m pip install -e ".[dev]"
+python -m alembic upgrade head
+python -m uvicorn app.main:app --reload
+```
+
+`Application startup complete.`가 보이면 `http://127.0.0.1:8000/health`를 열어 `{"status":"ok"}`인지 확인합니다.
+
+Gemini 설정은 Git에 올리지 않는 `backend/.env`에만 둡니다.
+
+```env
+GEMINI_API_KEY=발급받은_키
+GEMINI_TRAFFIC_RATIO=1
+EMOTION_ENGINE=gemini
+```
+
+### 2. 프론트엔드 실행
+
+새 PowerShell 창에서 실행합니다.
+
+```powershell
+cd C:\Emotion_Diary
+npm.cmd install
+npm.cmd run dev
+```
+
+`http://localhost:3000/login`에서 회원가입 후 로그인합니다. 로그인에 성공하면 홈으로 이동하며, 10자 이상 일기를 작성할 수 있습니다.
+
+### 3. 문제 해결과 테스트
+
+* 분석 요청이 실패하면 먼저 백엔드 창이 살아 있는지와 `/health` 응답을 확인합니다.
+* Gemini 문제를 분리하려면 `backend/.env`에서 `EMOTION_ENGINE=fasttext`로 바꾼 뒤 백엔드를 재시작합니다. FastText 경로는 Gemini 키 없이 동작합니다.
+* 프론트 테스트: `npm.cmd test`
+* 백엔드 테스트: `cd backend; python -m pytest`
 
 ---
 
@@ -103,8 +145,8 @@ python -m pytest
 ### 2. 프론트엔드 (Next.js)
 
 ```bash
-npm install
-npm run dev
+npm.cmd install
+npm.cmd run dev
 ```
 
 `.env.local`에 백엔드 주소를 지정합니다 (기본값 `http://localhost:8000`이라 로컬 개발에서는 생략 가능).
@@ -129,10 +171,10 @@ emotional-diary/
 │   ├── alembic/            # DB 마이그레이션
 │   └── tests/
 └── docs/
-    └── TECHNICAL_DETAILS.md  # 설계 배경, 아키텍처, 비용 분석 등 상세 문서
+    └── PORTFOLIO_REDESIGN.md # 설계 배경, 아키텍처, 비용 분석 등 상세 문서
 ```
 
-전체 컴포넌트 목록과 폴더 구조 상세는 [docs/TECHNICAL_DETAILS.md](docs/TECHNICAL_DETAILS.md#프로젝트-구조)를 참고하세요.
+전체 컴포넌트 목록과 폴더 구조 상세는 [포트폴리오 설계 문서](docs/PORTFOLIO_REDESIGN.md)를 참고하세요.
 
 ---
 
@@ -235,7 +277,7 @@ Gemini API를 쓰지 않는 경우(키 없음, 호출 실패, 또는 `GEMINI_TRA
 - [ ] `/api/v1/cost/stats`를 DB 집계 기반으로 바꿔 재배포 후에도 유지
 - [ ] 프로덕션 배포 환경 구성 (프론트엔드 Vercel, 백엔드는 관리형 Python 호스팅 서비스 검토 중)
 
-전체 계획과 진행 상황은 [docs/TECHNICAL_DETAILS.md](docs/TECHNICAL_DETAILS.md#향후-계획)를 참고하세요.
+전체 계획과 진행 상황은 [포트폴리오 설계 문서](docs/PORTFOLIO_REDESIGN.md)를 참고하세요.
 
 ---
 
