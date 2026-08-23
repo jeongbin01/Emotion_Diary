@@ -17,6 +17,11 @@ class Settings(BaseSettings):
 
     database_url: str = f"sqlite+aiosqlite:///{(BACKEND_ROOT / 'emotion_diary.db').as_posix()}"
 
+    # KcBERT/FastText/Gemini 전체 분석 파이프라인(diaries.py의 asyncio.to_thread) 타임아웃(초).
+    analysis_timeout_seconds: float = 30.0
+    # POST /api/v1/diaries에 대한 IP당 분당 허용 요청 수. 로그인 기반 인증이 아직 없어 IP 기준으로 제한한다.
+    rate_limit_per_minute: int = 10
+
     gemini_api_key: str | None = None
     # 0~1. 1(기본값)이면 항상 Gemini를 시도하고, 0이면 API 키가 있어도 FastText 로컬 경로로만
     # 처리해 비용을 0으로 수렴시킨다. Next.js 버전의 GEMINI_TRAFFIC_RATIO와 동일한 스위치.

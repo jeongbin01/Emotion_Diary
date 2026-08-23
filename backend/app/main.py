@@ -2,8 +2,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.api.v1 import cost, diaries
+from app.core.rate_limit import limiter
 from app.db.session import engine
 from app.models import Base
 from app.services.ai.fasttext_classifier import get_fasttext_classifier
@@ -28,6 +31,9 @@ app = FastAPI(
     description="KcBERT + FastText + Gemini 하이브리드 감정 분석 백엔드 (FastAPI, Phase 1)",
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
