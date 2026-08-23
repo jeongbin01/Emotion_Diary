@@ -1,9 +1,12 @@
+import logging
 from dataclasses import dataclass
 
 import pytest
 
 from app.services.ai.gemini_client import GeminiClientError
 from app.services.emotion_analysis import EmotionAnalysisService
+
+SERVICE_LOGGER = "app.services.emotion_analysis"
 
 
 class FakeKcBert:
@@ -131,3 +134,24 @@ def test_traffic_ratio_is_clamped_to_0_1(ratio):
     service = make_service(ratio=ratio, random_fn=lambda: 0.5, gemini_classify=failing_gemini)
     outcome = service.analyze("텍스트")
     assert outcome.engine == "fasttext"
+
+
+def test_gemini_failure_logs_a_warning_before_falling_back(caplog):
+    def failing_gemini(text, base_label, api_key):
+        raise GeminiClientError("네트워크 실패 흉내")
+
+    service = make_service(ratio=1.0, random_fn=lambda: 0.0, gemini_classify=failing_gemini)
+
+    with caplog.at_level(logging.WARNING, logger=SERVICE_LOGGER):
+        service.analyze("텍스트")
+
+    assert any("Gemini" in r.message and "폴백" in r.message for r in caplog.records)
+
+
+def test_missing_api_key_logs_info_before_falling_back(caplog):
+    service = make_service(ratio=1.0, api_key=None, random_fn=lambda: 0.0)
+
+    with caplog.at_level(logging.INFO, logger=SERVICE_LOGGER):
+        service.analyze("텍스트")
+
+    assert any("API_KEY 미설정" in r.message for r in caplog.records)
