@@ -99,12 +99,6 @@ emotional-diary/
 
 ---
 
-## AI 코딩 에이전트 안내
-
-이 저장소는 [`AGENTS.md`](./AGENTS.md)에 Next.js 버전 관련 주의사항을 명시해두었고, [`CLAUDE.md`](./CLAUDE.md)가 이를 그대로 참조합니다.
-
----
-
 ## 향후 계획
 
 - [ ] 히스토리 조회 화면 (캘린더 뷰 포함)

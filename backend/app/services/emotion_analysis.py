@@ -130,7 +130,7 @@ def _gemini_result_to_dict(parsed, detailed_emotions: list[dict]) -> dict:
 class EmotionAnalysisService:
     """route.ts의 POST 핸들러 + classifyWithGemini를 합친 오케스트레이션 계층. Router나 DB
     세션에 의존하지 않아 Gemini/랜덤 함수를 주입하면 HTTP나 실제 API 호출 없이 라우팅 로직만
-    결정론적으로 단위 테스트할 수 있다(docs/PORTFOLIO_REDESIGN.md §26)."""
+    결정론적으로 단위 테스트할 수 있다(docs/TECHNICAL_DETAILS.md §26)."""
 
     def __init__(
         self,

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 # 반정형 필드(emotions/causes/keywords/activities)는 JSONB(Postgres)로, 자주 조회할 핵심
-# 필드(label/confidence 등)는 일반 컬럼으로 분리한다 — docs/PORTFOLIO_REDESIGN.md §11 참고.
+# 필드(label/confidence 등)는 일반 컬럼으로 분리한다 — docs/TECHNICAL_DETAILS.md §11 참고.
 # SQLite(로컬 개발)에서는 JSONB가 없으므로 JSON으로 폴백한다.
 JsonColumn = JSON().with_variant(JSONB, "postgresql")
 

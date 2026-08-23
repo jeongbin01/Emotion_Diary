@@ -26,7 +26,7 @@ class GeminiCostBreakdown:
 
 # 서버 프로세스 메모리에만 있는 인메모리 집계 — geminiCost.ts의 globalThis.__costStats와 동일한
 # 한계(재시작 시 초기화)를 그대로 가진다. DB 적재는 EmotionAnalysis 테이블의 누적 쿼리로 대체한다
-# (docs/PORTFOLIO_REDESIGN.md §19), 이 모듈은 "지금 이 순간"의 실시간 집계용으로만 남겨둔다.
+# (docs/TECHNICAL_DETAILS.md §19), 이 모듈은 "지금 이 순간"의 실시간 집계용으로만 남겨둔다.
 _stats = CostStats()
 
 

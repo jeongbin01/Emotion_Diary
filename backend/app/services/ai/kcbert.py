@@ -11,7 +11,7 @@ LABELS = {0: "부정", 1: "중립", 2: "긍정"}
 class KcBertClassifier:
     """BE/infer_server.py의 KcBERT 부분을 그대로 옮긴 것. 상주 Python 프로세스가 아니라
     FastAPI 프로세스 안에서 모듈 하나로 존재한다는 점만 다르다 — stdin/stdout IPC가 사라지고
-    함수 호출로 대체된다(docs/PORTFOLIO_REDESIGN.md §7 참고)."""
+    함수 호출로 대체된다(docs/TECHNICAL_DETAILS.md §7 참고)."""
 
     def __init__(self, model_path: str):
         self.tokenizer = BertTokenizer.from_pretrained(model_path)

@@ -35,7 +35,7 @@
 - "긍정/부정" 두 단어로 뭉뚱그리지 않고 33가지 세부 감정과 원인·심리 상태·성장 포인트까지 짚어, 하루를 더 깊이 들여다볼 수 있게 한다.
 - 로컬 분류 모델(KcBERT)과 생성형 AI(Gemini)를 단계적으로 결합해, Gemini가 응답하지 않는 상황에서도 최소한의 감정 분석 결과를 돌려줄 수 있는 구조를 목표로 했다.
 - 나아가 "Gemini 호출을 아예 줄이면 비용이 얼마까지 내려가는가"를 실제로 검증하기 위해, 33종 감정 분류를 CPU 전용 FastText 모델로 대체하는 경로를 직접 만들고 실측 토큰·비용 데이터로 비교했다.
-- AI 오케스트레이션을 Next.js API Route(자식 프로세스 IPC)에서 FastAPI 백엔드(in-process 함수 호출 + Controller/Service/Repository 계층 분리)로 옮겨, 백엔드 아키텍처 역량을 보여줄 수 있는 표면을 확보했다. 자세한 설계 배경은 [docs/PORTFOLIO_REDESIGN.md](PORTFOLIO_REDESIGN.md) 참고.
+- AI 오케스트레이션을 Next.js API Route(자식 프로세스 IPC)에서 FastAPI 백엔드(in-process 함수 호출 + Controller/Service/Repository 계층 분리)로 옮겨, 백엔드 아키텍처 역량을 보여줄 수 있는 표면을 확보했다. 자세한 설계 배경은 [docs/TECHNICAL_DETAILS.md](TECHNICAL_DETAILS.md) 참고.
 
 ### 타겟 사용자
 
@@ -75,7 +75,7 @@
 2. **아키텍처 표면 확보** — Router/Service/Repository 계층 분리, Pydantic 기반 요청/응답 검증, SQLAlchemy + Alembic 기반 DB 마이그레이션을 실제로 보여줄 수 있는 구조가 됩니다.
 3. **AI 추론 서버로서의 적합성** — Pydantic이 Gemini `response_schema`와 거의 1:1로 대응되는 검증을 자체 제공하고, `async def` 엔드포인트가 Gemini 호출(I/O 대기)과 KcBERT/FastText 추론(CPU 바운드, `asyncio.to_thread`로 위임)을 자연스럽게 분리해 처리합니다.
 
-자세한 설계 배경(왜 Spring Boot/Express가 아닌지 포함)은 [docs/PORTFOLIO_REDESIGN.md §6](PORTFOLIO_REDESIGN.md#6-기술-스택을-선택한-이유) 참고.
+자세한 설계 배경(왜 Spring Boot/Express가 아닌지 포함)은 [docs/TECHNICAL_DETAILS.md §6](TECHNICAL_DETAILS.md#6-기술-스택을-선택한-이유) 참고.
 
 ### React 19
 
@@ -134,7 +134,7 @@ KcBERT는 PyTorch/Transformers 기반이라 Python 런타임이 필요합니다.
 2. 그렇지 않으면 `GEMINI_TRAFFIC_RATIO`(기본값 1, 즉 100%) 확률로 Gemini를 시도한다.
 3. Gemini를 시도했는데 API 키가 없거나 호출이 실패하면(`GeminiClientError`), 그 요청 역시 FastText 경로로 떨어진다.
 
-세 경로 모두 최종적으로 같은 함수(`create_local_detailed_result`)를 호출합니다. 사용자 입장에서는 두 경우(의도적 절감 vs 실패로 인한 fallback) 모두 "무료 경로에서 나온 결과"라는 사실이 같고 결과 품질도 동일해야 한다고 판단했기 때문입니다. 이 라우팅 로직은 Gemini·랜덤 함수를 주입해 결정론적으로 단위 테스트합니다([test_emotion_analysis_service.py](../backend/tests/test_emotion_analysis_service.py)) — 실제 Gemini API를 호출하지 않아 비용이 들지 않고 재현 가능합니다. 전체 테스트 전략은 [docs/PORTFOLIO_REDESIGN.md §26](PORTFOLIO_REDESIGN.md#26-테스트-전략) 참고.
+세 경로 모두 최종적으로 같은 함수(`create_local_detailed_result`)를 호출합니다. 사용자 입장에서는 두 경우(의도적 절감 vs 실패로 인한 fallback) 모두 "무료 경로에서 나온 결과"라는 사실이 같고 결과 품질도 동일해야 한다고 판단했기 때문입니다. 이 라우팅 로직은 Gemini·랜덤 함수를 주입해 결정론적으로 단위 테스트합니다([test_emotion_analysis_service.py](../backend/tests/test_emotion_analysis_service.py)) — 실제 Gemini API를 호출하지 않아 비용이 들지 않고 재현 가능합니다. 전체 테스트 전략은 [docs/TECHNICAL_DETAILS.md §26](TECHNICAL_DETAILS.md#26-테스트-전략) 참고.
 
 ### KcBERT를 먼저 수행하는 이유
 
@@ -461,7 +461,7 @@ Gemini API를 쓰지 않는 경우에도 FastText가 33종 세부 감정을 분�
 - 분석 결과는 백엔드 DB에 저장되지만, 프론트에는 아직 히스토리를 조회하는 화면이 없습니다. `GET /api/v1/diaries`로 조회는 가능하지만 UI가 연결되지 않아, 새로고침하거나 '다시 쓰기'를 누르면 화면상으로는 사라집니다.
 - `WeeklyTrendChart`는 실제 DB 데이터를 조회해 최근 7일을 그리지만, `EmotionRingCard`의 '어제보다 +N%' 배지는 여전히 고정된 샘플 값입니다.
 - 필드 단위 검증(zod 등)은 프론트에 아직 없고, 백엔드의 Pydantic `response_schema` + `GeminiClientError` 조합으로만 방어하고 있습니다.
-- 로그인·인증이 없어 `Diary.user_id`가 항상 비어 있습니다(모든 일기가 익명 사용자 소유). 인증은 다음 단계로 설계돼 있습니다([docs/PORTFOLIO_REDESIGN.md §25 Phase 2](PORTFOLIO_REDESIGN.md#25-개발-단계별-구현-계획)).
+- 로그인·인증이 없어 `Diary.user_id`가 항상 비어 있습니다(모든 일기가 익명 사용자 소유). 인증은 다음 단계로 설계돼 있습니다([docs/TECHNICAL_DETAILS.md §25 Phase 2](TECHNICAL_DETAILS.md#25-개발-단계별-구현-계획)).
 - FastText 분류기는 사람이 라벨링한 실제 일기 데이터가 아니라 키워드 시드로 합성한 문장으로 학습했습니다(weak supervision). 실제 사용자 문장(특히 반어법·은유·복합 감정)에서는 정확도가 낮을 수 있습니다.
 - `/api/v1/cost/stats`의 비용 통계는 서버 프로세스 메모리에만 있는 값이라, 재배포·재시작하면 초기화됩니다.
 - 프론트(Next.js)와 백엔드(FastAPI)를 각각 별도 프로세스로 띄워야 합니다 — 백엔드가 꺼져 있으면 `/api/analyze` 프록시가 실패합니다.

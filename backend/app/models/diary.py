@@ -12,7 +12,7 @@ class Diary(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     # Phase 1에는 로그인 기능이 없어 nullable로 둔다. Phase 2에서 인증이 붙으면
-    # NOT NULL로 좁히는 마이그레이션을 추가한다 (docs/PORTFOLIO_REDESIGN.md §11 ERD 참고).
+    # NOT NULL로 좁히는 마이그레이션을 추가한다 (docs/TECHNICAL_DETAILS.md §11 ERD 참고).
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )

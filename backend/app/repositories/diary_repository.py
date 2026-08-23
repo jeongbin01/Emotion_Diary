@@ -11,7 +11,7 @@ from app.services.emotion_analysis import AnalysisOutcome
 
 class DiaryRepository:
     """SQLAlchemy 쿼리를 캡슐화한다. Service는 "일기와 분석 결과를 저장해달라"고만 요청하고,
-    실제 INSERT/조인/정렬은 여기서 담당한다 — docs/PORTFOLIO_REDESIGN.md §9의 3계층 분리."""
+    실제 INSERT/조인/정렬은 여기서 담당한다 — docs/TECHNICAL_DETAILS.md §9의 3계층 분리."""
 
     def __init__(self, session: AsyncSession):
         self._session = session
