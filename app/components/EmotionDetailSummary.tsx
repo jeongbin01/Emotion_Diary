@@ -31,7 +31,7 @@ export default function EmotionDetailSummary({ mindState, causes, growthPoint, t
             className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
             style={{ backgroundColor: item.bg }}
           >
-            <item.icon size={20} strokeWidth={2} color={item.tint} />
+            <item.icon size={20} strokeWidth={2} color={item.tint} aria-hidden="true" />
           </span>
           <p className="font-pretendard text-[15px] font-semibold text-[#2B2B2B]">{item.title}</p>
           <p className="font-pretendard text-[13px] text-[#6D6D6D] leading-relaxed">{item.desc}</p>
