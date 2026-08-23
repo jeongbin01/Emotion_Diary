@@ -22,7 +22,6 @@ type Props = {
 export default function DiaryResultDashboard({ result, text, pastDays, onReset }: Props) {
   return (
     <div className="space-y-6">
-      {/* Row 1: 오늘의 감정 / 감정 요약 */}
       <div className="fade-up grid grid-cols-1 lg:grid-cols-2 gap-6">
         <EmotionRingCard label={result.label} confidence={result.confidence} />
         <EmotionSummaryCard
@@ -33,14 +32,13 @@ export default function DiaryResultDashboard({ result, text, pastDays, onReset }
         />
       </div>
 
-      {/* Row 2: 감정 분포 / 감정 원인 분석 / 최근 감정 변화 */}
       <div className="fade-up grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ animationDelay: '0.08s' }}>
         {result.emotions?.length > 0 && <EmotionTop3Card emotions={result.emotions} />}
         {result.causes?.length > 0 && <CauseDonutChart label={result.label} causes={result.causes} />}
         <WeeklyTrendChart label={result.label} pastDays={pastDays} />
       </div>
 
-      {/* Row 3: 오늘의 기록 / AI 추천 활동 / AI 한마디 / 오늘의 문장 (2x2 그리드로 행 높이를 맞춘다) */}
+      {/* 카드 4개 높이를 맞추려고 2x2 그리드로 묶는다 */}
       <div className="fade-up grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.16s' }}>
         <DiaryEntry text={text} />
         {result.activities?.length > 0 && <ActivitiesCard activities={result.activities} />}
@@ -54,7 +52,6 @@ export default function DiaryResultDashboard({ result, text, pastDays, onReset }
         </div>
       )}
 
-      {/* Row 4: 감정 분석 상세 */}
       <div className="fade-up" style={{ animationDelay: '0.24s' }}>
         <EmotionDetailSummary
           mindState={result.mindState}

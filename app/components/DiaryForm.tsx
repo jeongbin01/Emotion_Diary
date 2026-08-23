@@ -20,7 +20,6 @@ export default function DiaryForm() {
     <div className="dashboard-bg min-h-screen px-5 sm:px-8 lg:px-10 py-12 lg:py-16">
       <div className="w-full max-w-[1200px] mx-auto">
 
-        {/* 헤더 */}
         <header className="fade-up text-center mb-10 lg:mb-14">
           <h1 className="font-pretendard font-bold text-[32px] sm:text-[38px] lg:text-[44px] text-[#2B2B2B]">
             오늘의 하루
