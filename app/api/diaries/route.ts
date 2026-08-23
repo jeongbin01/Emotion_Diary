@@ -9,6 +9,9 @@ export async function GET(request: Request) {
 
     const backendRes = await fetch(`${BACKEND_URL}/api/v1/diaries?limit=${encodeURIComponent(limit)}`, {
       cache: 'no-store',
+      headers: request.headers.get('authorization')
+        ? { Authorization: request.headers.get('authorization')! }
+        : {},
     })
     const data = await backendRes.json()
     return Response.json(data, { status: backendRes.status })

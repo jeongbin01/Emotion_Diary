@@ -14,14 +14,22 @@ export async function POST(request: Request) {
 
     const backendRes = await fetch(`${BACKEND_URL}/api/v1/diaries`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(request.headers.get('authorization') ? { Authorization: request.headers.get('authorization')! } : {}),
+      },
       body: JSON.stringify({ text }),
     })
 
     if (!backendRes.ok) {
       const errorBody = await backendRes.json().catch(() => null)
+      // 백엔드는 HTTPException(400/404/504 등)에는 detail을, rate limit(429)에는 slowapi 기본
+      // 포맷인 error를 쓴다 — 둘 다 확인해야 429일 때도 실제 사유가 그대로 전달된다.
       return Response.json(
-        { error: errorBody?.detail ?? '감정 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
+        {
+          error:
+            errorBody?.detail ?? errorBody?.error ?? '감정 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        },
         { status: backendRes.status },
       )
     }

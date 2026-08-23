@@ -17,6 +17,14 @@ class Settings(BaseSettings):
 
     database_url: str = f"sqlite+aiosqlite:///{(BACKEND_ROOT / 'emotion_diary.db').as_posix()}"
 
+    log_level: str = "INFO"
+    # Gemini SDK 호출 타임아웃(초). 초과하면 GeminiClientError로 감싸져 기존 FastText 폴백 경로를 탄다.
+    gemini_timeout_seconds: float = 15.0
+    # KcBERT/FastText/Gemini 전체 분석 파이프라인(diaries.py의 asyncio.to_thread) 타임아웃(초).
+    analysis_timeout_seconds: float = 30.0
+    # POST /api/v1/diaries에 대한 IP당 분당 허용 요청 수. 로그인 기반 인증이 아직 없어 IP 기준으로 제한한다.
+    rate_limit_per_minute: int = 10
+
     gemini_api_key: str | None = None
     # 0~1. 1(기본값)이면 항상 Gemini를 시도하고, 0이면 API 키가 있어도 FastText 로컬 경로로만
     # 처리해 비용을 0으로 수렴시킨다. Next.js 버전의 GEMINI_TRAFFIC_RATIO와 동일한 스위치.
@@ -26,6 +34,12 @@ class Settings(BaseSettings):
 
     kcbert_model_path: str = str(BACKEND_ROOT / "models" / "kcbert")
     fasttext_model_path: str = str(BACKEND_ROOT / "models" / "fasttext" / "emotion_ft.bin")
+
+    # JWT 서명 비밀 키. 기본값은 로컬 개발 전용이며, 프로덕션 배포 시 반드시 .env에서
+    # 무작위로 재생성한 값으로 덮어써야 한다(하드코딩 금지 원칙 — 이 기본값 자체를
+    # 실제 배포에 쓰지 않는다는 전제하에만 안전하다).
+    jwt_secret: str = "dev-only-insecure-secret-change-me"
+    jwt_access_token_expire_minutes: int = 60 * 24  # 1일
 
     @property
     def sync_database_url(self) -> str:
