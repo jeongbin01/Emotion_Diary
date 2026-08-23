@@ -34,6 +34,14 @@ def test_signup_rejects_too_short_a_password_with_422(db_session: AsyncSession):
     assert response.status_code == 422
 
 
+def test_signup_rejects_a_malformed_email_with_422(db_session: AsyncSession):
+    client = TestClient(make_app(db_session))
+
+    response = client.post("/api/v1/auth/signup", json={"email": "not-an-email", "password": "password123"})
+
+    assert response.status_code == 422
+
+
 def test_signup_with_a_duplicate_email_returns_409(db_session: AsyncSession):
     client = TestClient(make_app(db_session))
     client.post("/api/v1/auth/signup", json={"email": "user@example.com", "password": "password123"})
