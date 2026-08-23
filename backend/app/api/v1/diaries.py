@@ -5,9 +5,11 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_current_user
 from app.core.config import settings
 from app.core.rate_limit import limiter
 from app.db.session import get_db
+from app.models.user import User
 from app.repositories.diary_repository import DiaryRepository
 from app.schemas.diary import DiaryCreateRequest, DiaryOut
 from app.services.emotion_analysis import EmotionAnalysisService, get_emotion_analysis_service
@@ -22,6 +24,7 @@ router = APIRouter(prefix="/diaries", tags=["diaries"])
 async def create_diary(
     request: Request,
     payload: DiaryCreateRequest,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     service: EmotionAnalysisService = Depends(get_emotion_analysis_service),
 ) -> DiaryOut:
@@ -42,21 +45,29 @@ async def create_diary(
         raise HTTPException(status_code=504, detail="분석이 너무 오래 걸려 중단했습니다. 잠시 후 다시 시도해주세요.")
 
     repo = DiaryRepository(db)
-    diary = await repo.create_with_analysis(content=text, outcome=outcome)
+    diary = await repo.create_with_analysis(content=text, outcome=outcome, user_id=current_user.id)
     return DiaryOut.model_validate(diary)
 
 
 @router.get("", response_model=list[DiaryOut])
-async def list_diaries(limit: int = 20, db: AsyncSession = Depends(get_db)) -> list[DiaryOut]:
+async def list_diaries(
+    limit: int = 20,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[DiaryOut]:
     repo = DiaryRepository(db)
-    diaries = await repo.list_recent(limit=limit)
+    diaries = await repo.list_recent(limit=limit, user_id=current_user.id)
     return [DiaryOut.model_validate(diary) for diary in diaries]
 
 
 @router.get("/{diary_id}", response_model=DiaryOut)
-async def get_diary(diary_id: uuid.UUID, db: AsyncSession = Depends(get_db)) -> DiaryOut:
+async def get_diary(
+    diary_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DiaryOut:
     repo = DiaryRepository(db)
-    diary = await repo.get_by_id(diary_id)
+    diary = await repo.get_by_id(diary_id, user_id=current_user.id)
     if diary is None:
         raise HTTPException(status_code=404, detail="일기를 찾을 수 없습니다.")
     return DiaryOut.model_validate(diary)

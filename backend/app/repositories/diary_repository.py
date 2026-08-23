@@ -52,11 +52,11 @@ class DiaryRepository:
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_id(self, diary_id: uuid.UUID) -> Diary | None:
+    async def get_by_id(self, diary_id: uuid.UUID, user_id: uuid.UUID) -> Diary | None:
         stmt = (
             select(Diary)
             .options(selectinload(Diary.emotion_analysis))
-            .where(Diary.id == diary_id)
+            .where(Diary.id == diary_id, Diary.user_id == user_id)
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()

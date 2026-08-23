@@ -17,7 +17,8 @@ export default function AuthForm() {
     setSuccessMessage('')
 
     if (mode === 'login') {
-      await login(email, password)
+      const ok = await login(email, password)
+      if (ok) window.location.assign('/')
       return
     }
 

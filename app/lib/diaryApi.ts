@@ -1,4 +1,5 @@
 import type { DiarySummary } from './weeklyTrend'
+import { getToken } from './authStorage'
 
 export type EmotionScore = { label: string; score: number }
 export type Cause = { label: string; percent: number }
@@ -27,10 +28,12 @@ export class RateLimitedError extends Error {}
 export class AnalysisTimeoutError extends Error {}
 export class ServerError extends Error {}
 export class NetworkError extends Error {}
+export class AuthenticationError extends Error {}
 
 function errorForStatus(status: number, message: string): Error {
   if (status === 429) return new RateLimitedError(message)
   if (status === 504) return new AnalysisTimeoutError(message)
+  if (status === 401) return new AuthenticationError(message)
   return new ServerError(message)
 }
 
@@ -39,7 +42,7 @@ export async function postAnalyze(text: string): Promise<DiaryAnalysisResult> {
   try {
     res = await fetch('/api/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ text }),
       signal: AbortSignal.timeout(ANALYZE_TIMEOUT_MS),
     })
@@ -59,6 +62,7 @@ export async function postAnalyze(text: string): Promise<DiaryAnalysisResult> {
 
 export async function fetchPastDays(limit: number): Promise<DiarySummary[]> {
   const res = await fetch(`/api/diaries?limit=${limit}`, {
+    headers: authHeaders(),
     signal: AbortSignal.timeout(PAST_DAYS_TIMEOUT_MS),
   })
   const data = await res.json()
@@ -66,4 +70,9 @@ export async function fetchPastDays(limit: number): Promise<DiarySummary[]> {
     throw new Error('예상하지 못한 응답 형식입니다.')
   }
   return data
+}
+
+function authHeaders(headers: HeadersInit = {}): HeadersInit {
+  const token = getToken()
+  return token ? { ...headers, Authorization: `Bearer ${token}` } : headers
 }

@@ -14,7 +14,10 @@ export async function POST(request: Request) {
 
     const backendRes = await fetch(`${BACKEND_URL}/api/v1/diaries`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(request.headers.get('authorization') ? { Authorization: request.headers.get('authorization')! } : {}),
+      },
       body: JSON.stringify({ text }),
     })
 

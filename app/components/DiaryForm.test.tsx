@@ -26,10 +26,12 @@ const analysisResult = {
 describe('DiaryForm integration', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
+    window.localStorage.setItem('emotion_diary_access_token', 'test-token')
   })
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    window.localStorage.clear()
   })
 
   it('lets a user write a diary, see the loading state, view the result dashboard, and return via 다시 쓰기', async () => {
