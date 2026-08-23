@@ -14,22 +14,34 @@ logger = logging.getLogger(__name__)
 
 FALLBACK_ACTIVITIES: dict[str, list[dict]] = {
     "긍정": [
-        {"icon": "🎵", "label": "좋아하는 음악"},
+        {"icon": "🎵", "label": "좋아하는 음악 듣기"},
         {"icon": "📞", "label": "소중한 사람과 통화"},
-        {"icon": "🚶", "label": "산책 10분"},
-        {"icon": "📝", "label": "오늘 기분 기록"},
+        {"icon": "📷", "label": "오늘의 순간 사진으로 남기기"},
+        {"icon": "✍️", "label": "감사한 일 세 가지 적기"},
+        {"icon": "🍮", "label": "좋아하는 디저트 즐기기"},
+        {"icon": "🎨", "label": "취미 활동 30분"},
+        {"icon": "💌", "label": "고마운 사람에게 메시지 보내기"},
+        {"icon": "🌳", "label": "좋아하는 산책로 걷기"},
     ],
     "중립": [
-        {"icon": "🧘", "label": "스트레칭"},
-        {"icon": "☕", "label": "따뜻한 차"},
-        {"icon": "🚶", "label": "산책 10분"},
-        {"icon": "📖", "label": "가벼운 독서"},
+        {"icon": "🧘", "label": "가벼운 스트레칭"},
+        {"icon": "☕", "label": "따뜻한 차 한 잔"},
+        {"icon": "📖", "label": "좋아하는 책 몇 페이지"},
+        {"icon": "🎧", "label": "좋아하는 플레이리스트 듣기"},
+        {"icon": "🪴", "label": "화분에 물 주기"},
+        {"icon": "🚿", "label": "따뜻한 물로 샤워"},
+        {"icon": "📝", "label": "오늘 하루 정리해보기"},
+        {"icon": "🌤️", "label": "창밖 바람 쐬기"},
     ],
     "부정": [
-        {"icon": "☕", "label": "따뜻한 차"},
-        {"icon": "🌙", "label": "일찍 자기"},
-        {"icon": "🚶", "label": "산책 10분"},
-        {"icon": "🧘", "label": "스트레칭"},
+        {"icon": "☕", "label": "따뜻한 차 한 잔"},
+        {"icon": "🌙", "label": "평소보다 일찍 잠자리"},
+        {"icon": "🛁", "label": "따뜻한 물로 몸 녹이기"},
+        {"icon": "🫂", "label": "믿을 수 있는 사람에게 털어놓기"},
+        {"icon": "🎶", "label": "마음을 편안하게 해주는 음악"},
+        {"icon": "🍵", "label": "좋아하는 향의 차 우리기"},
+        {"icon": "📓", "label": "마음속 이야기를 글로 쓰기"},
+        {"icon": "🕯️", "label": "조용히 나만의 시간 갖기"},
     ],
 }
 
@@ -107,7 +119,7 @@ def create_local_detailed_result(
         "mind_state": f"오늘은 {top_label} 감정이 두드러진 하루였어요. 스스로의 상태를 알아차린 것만으로도 의미가 있어요.",
         "growth_point": "감정을 있는 그대로 기록해본 것 자체가 오늘의 성장 포인트예요.",
         "tomorrow_message": "오늘보다 조금 더 편안한 하루가 되기를 바라요.",
-        "activities": FALLBACK_ACTIVITIES[polarity],
+        "activities": random.sample(FALLBACK_ACTIVITIES[polarity], k=4),
         "quote": "충분히 쉬는 것도 하루를 잘 보내는 방법입니다.",
     }
 
