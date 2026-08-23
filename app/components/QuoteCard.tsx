@@ -29,6 +29,7 @@ export default function QuoteCard({ label, quote }: Props) {
             strokeWidth={2}
             color={liked ? theme.color : '#B9AEE0'}
             fill={liked ? theme.color : 'transparent'}
+            aria-hidden="true"
           />
         </button>
       </div>

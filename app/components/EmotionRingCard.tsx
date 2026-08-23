@@ -78,7 +78,7 @@ export default function EmotionRingCard({ label, confidence }: Props) {
         className="mt-4 inline-flex items-center gap-1 px-3 py-1 rounded-full font-pretendard text-xs font-medium"
         style={{ backgroundColor: 'rgba(235, 106, 106, 0.1)', color: '#EB6A6A' }}
       >
-        <TrendingUp size={13} strokeWidth={2.5} />
+        <TrendingUp size={13} strokeWidth={2.5} aria-hidden="true" />
         <span>어제보다 +12%</span>
       </div>
       <p className="mt-3 flex items-center gap-1 font-pretendard text-xs text-[#6D6D6D]">

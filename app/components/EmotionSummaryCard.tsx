@@ -45,6 +45,7 @@ export default function EmotionSummaryCard({ label, confidence, aiOneLiner, keyw
             strokeWidth={2}
             color={i < filledStars ? theme.color : '#E8E3DA'}
             fill={i < filledStars ? theme.color : 'transparent'}
+            aria-hidden="true"
           />
         ))}
       </div>
