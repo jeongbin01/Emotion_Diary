@@ -20,7 +20,9 @@ from fastapi.testclient import TestClient
 def _app():
     from app.main import app
 
-    with TestClient(app) as test_client:
+    # raise_server_exceptions=False: 전역 예외 핸들러가 실제로 만든 HTTP 응답(500)을 테스트에서
+    # 검증하기 위함 — 기본값(True)이면 TestClient가 핸들러 결과 대신 원본 예외를 다시 던진다.
+    with TestClient(app, raise_server_exceptions=False) as test_client:
         yield app, test_client
 
 
@@ -34,7 +36,6 @@ def client(_app):
     limiter.reset()
     yield test_client
     app.dependency_overrides.clear()
-
 import pytest_asyncio  # noqa: E402
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402

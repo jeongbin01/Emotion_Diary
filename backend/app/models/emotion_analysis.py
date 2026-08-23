@@ -7,9 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 
-# 반정형 필드(emotions/causes/keywords/activities)는 JSONB(Postgres)로, 자주 조회할 핵심
-# 필드(label/confidence 등)는 일반 컬럼으로 분리한다 — docs/PORTFOLIO_REDESIGN.md §11 참고.
-# SQLite(로컬 개발)에서는 JSONB가 없으므로 JSON으로 폴백한다.
+# SQLite(로컬 개발)에는 JSONB가 없으므로, Postgres에서만 JSONB를 쓰고 그 외엔 JSON으로 폴백한다.
 JsonColumn = JSON().with_variant(JSONB, "postgresql")
 
 
@@ -35,7 +33,7 @@ class EmotionAnalysis(Base):
     activities: Mapped[list] = mapped_column(JsonColumn)
     quote: Mapped[str] = mapped_column(Text)
 
-    # AI 비용/성능을 시간에 따라 관측하기 위한 필드 — 요청 원문 스펙(§11)이 요구한 지점이다.
+    # AI 비용/성능을 시간에 따라 관측하기 위한 필드.
     engine: Mapped[str] = mapped_column(String(16))
     input_tokens: Mapped[int] = mapped_column(Integer, default=0)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)
