@@ -7,10 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from app.api.v1 import cost, diaries
+<<<<<<< HEAD
+from app.api.v1 import auth, cost, diaries
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.core.rate_limit import limiter
+=======
+from app.api.v1 import auth, cost, diaries
+>>>>>>> feature/authentication
 from app.db.session import engine
 from app.models import Base
 from app.services.ai.fasttext_classifier import get_fasttext_classifier
@@ -65,6 +69,8 @@ async def log_requests(request: Request, call_next):
 
 app.include_router(diaries.router, prefix="/api/v1")
 app.include_router(cost.router, prefix="/api/v1")
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(auth.router, prefix="/api/v1")
 
 
 @app.get("/health")
