@@ -48,7 +48,7 @@ export default function ActivitiesCard({ activities }: Props) {
                 className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0"
                 style={{ backgroundColor: PASTEL_BG[i % PASTEL_BG.length] }}
               >
-                <Icon size={20} strokeWidth={2} color={PASTEL_ICON[i % PASTEL_ICON.length]} />
+                <Icon size={20} strokeWidth={2} color={PASTEL_ICON[i % PASTEL_ICON.length]} aria-hidden="true" />
               </div>
               <span className="font-pretendard text-[12px] text-[#2B2B2B] text-center leading-tight break-keep">
                 {a.label}
