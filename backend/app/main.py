@@ -26,18 +26,22 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
 
-    # KcBERT(~415MB)/FastText(~2.4MB) 모델을 부팅 시 한 번만 메모리에 올린다 — 요청마다 모델을
-    # 새로 로딩하는 비용을 없앤다.
     start = time.perf_counter()
     get_kcbert_classifier()
     get_fasttext_classifier()
-    logger.info("모델 워밍업 완료 (%.2fs)", time.perf_counter() - start)
+    logger.info("모델 준비 완료 (%.2fs)", time.perf_counter() - start)
     yield
 
 
 app = FastAPI(
     title="오늘의 하루 API",
-    description="KcBERT + FastText + Gemini 하이브리드 감정 분석 백엔드 (FastAPI, Phase 1)",
+    description="감정 일기 분석 서비스의 백엔드 API입니다. 로그인 후 일기를 작성하고 분석 결과를 조회할 수 있습니다.",
+    version="1.0.0",
+    openapi_tags=[
+        {"name": "인증", "description": "회원가입, 로그인 및 현재 사용자 정보를 관리합니다."},
+        {"name": "일기", "description": "감정 분석이 포함된 일기를 작성하고 조회합니다."},
+        {"name": "비용", "description": "AI 분석 API 사용 비용 통계를 조회합니다."},
+    ],
     lifespan=lifespan,
 )
 
@@ -58,17 +62,13 @@ async def log_requests(request: Request, call_next):
     start = time.perf_counter()
     response = await call_next(request)
     duration_ms = int((time.perf_counter() - start) * 1000)
-    logger.info(
-        "%s %s -> %d (%dms)", request.method, request.url.path, response.status_code, duration_ms
-    )
+    logger.info("%s %s -> %d (%dms)", request.method, request.url.path, response.status_code, duration_ms)
     return response
 
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    # HTTPException(400/404 등)은 FastAPI 기본 핸들러가 그대로 처리하므로 여기까지 오지 않는다.
-    # 여기 도달하는 예외는 전부 예상치 못한 실패라, 스택트레이스를 남기고 내부 정보는 노출하지 않는다.
-    logger.exception("처리되지 않은 예외: %s %s", request.method, request.url.path)
+    logger.exception("처리하지 못한 예외: %s %s", request.method, request.url.path)
     return JSONResponse(status_code=500, content={"detail": "서버 오류가 발생했습니다."})
 
 
@@ -77,6 +77,6 @@ app.include_router(cost.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
 
 
-@app.get("/health")
+@app.get("/health", tags=["상태 확인"], summary="서버 상태 확인", description="서버가 정상적으로 실행 중인지 확인합니다.")
 async def health() -> dict:
     return {"status": "ok"}

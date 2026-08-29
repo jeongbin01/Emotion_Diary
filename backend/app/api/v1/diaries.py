@@ -16,10 +16,10 @@ from app.services.emotion_analysis import EmotionAnalysisService, get_emotion_an
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/diaries", tags=["diaries"])
+router = APIRouter(prefix="/diaries", tags=["일기"])
 
 
-@router.post("", response_model=DiaryOut, status_code=201)
+@router.post("", response_model=DiaryOut, status_code=201, summary="일기 작성 및 감정 분석", description="일기를 저장하고 AI 감정 분석 결과를 함께 생성합니다.")
 @limiter.limit(lambda: f"{settings.rate_limit_per_minute}/minute")
 async def create_diary(
     request: Request,
@@ -49,7 +49,7 @@ async def create_diary(
     return DiaryOut.model_validate(diary)
 
 
-@router.get("", response_model=list[DiaryOut])
+@router.get("", response_model=list[DiaryOut], summary="최근 일기 목록 조회", description="인증된 사용자의 최근 일기를 조회합니다.")
 async def list_diaries(
     limit: int = 20,
     current_user: User = Depends(get_current_user),
@@ -60,7 +60,7 @@ async def list_diaries(
     return [DiaryOut.model_validate(diary) for diary in diaries]
 
 
-@router.get("/{diary_id}", response_model=DiaryOut)
+@router.get("/{diary_id}", response_model=DiaryOut, summary="일기 상세 조회", description="일기 ID로 작성한 일기와 감정 분석 결과를 조회합니다.")
 async def get_diary(
     diary_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
