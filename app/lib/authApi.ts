@@ -18,20 +18,20 @@ function errorForStatus(status: number, message: string): Error {
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  let res: Response
+  let response: Response
   try {
-    res = await fetch(path, {
+    response = await fetch(path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
   } catch {
-    throw new NetworkError('요청에 실패했습니다. 네트워크 상태를 확인해주세요.')
+    throw new NetworkError('요청에 실패했습니다. 네트워크 상태를 확인해 주세요.')
   }
 
-  const data = await res.json().catch(() => null)
-  if (!res.ok) {
-    throw errorForStatus(res.status, data?.error ?? '요청 처리 중 오류가 발생했습니다.')
+  const data = await response.json().catch(() => null)
+  if (!response.ok) {
+    throw errorForStatus(response.status, data?.error ?? '요청 처리 중 오류가 발생했습니다.')
   }
   return data as T
 }

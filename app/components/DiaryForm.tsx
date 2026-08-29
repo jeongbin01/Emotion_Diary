@@ -4,6 +4,7 @@ import DiaryInputForm from './DiaryInputForm'
 import DiaryResultDashboard from './DiaryResultDashboard'
 import ErrorBanner from './ErrorBanner'
 import ErrorBoundary from './ErrorBoundary'
+import BrandMark from './auth/BrandMark'
 import { useDiaryAnalysis } from '../hooks/useDiaryAnalysis'
 import { useAuth } from '../hooks/useAuth'
 
@@ -21,14 +22,13 @@ export default function DiaryForm() {
   if (!isAuthenticated) {
     return (
       <main className="dashboard-bg min-h-screen flex items-center justify-center px-5">
-        <section className="ds-card max-w-[440px] p-8 text-center">
-          <h1 className="font-pretendard text-2xl font-bold text-[#2B2B2B]">오늘의 하루</h1>
-          <p className="mt-3 font-pretendard text-sm text-[#666]">일기를 안전하게 기록하려면 로그인해주세요.</p>
-          <a
-            href="/login"
-            className="ds-btn mt-6 inline-block rounded-2xl px-6 py-3 font-pretendard text-sm font-semibold text-white"
-            style={{ backgroundColor: '#8B74D9' }}
-          >
+        <section className="auth-card notepad-lines fade-up w-full max-w-[420px] text-center">
+          <div className="auth-brand">
+            <BrandMark />
+          </div>
+          <h1 className="auth-title font-gaegu">오늘 하루, 기록해볼까요</h1>
+          <p className="auth-tagline font-pretendard">이 노트는 로그인한 당신만 펼쳐볼 수 있어요.</p>
+          <a href="/login" className="auth-submit inline-block">
             로그인 / 회원가입
           </a>
         </section>
